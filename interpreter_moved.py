@@ -54,7 +54,7 @@ filename = _thisDir + os.sep + u'data/%s_%s_%s' % (expInfo['participant'], expNa
 # An ExperimentHandler isn't essential but helps with data saving
 thisExp = data.ExperimentHandler(name=expName, version='',
     extraInfo=expInfo, runtimeInfo=None,
-    originPath='C:\\Users\\aswil\\Desktop\\College\\Internships\\Bashivan Lab\\Projects\\Main Task Xiaoxuan\\1\\interpreter.py',
+    originPath='./interpreter_moved.py',
     savePickle=True, saveWideText=True,
     dataFileName=filename)
 # save a log file for detail verbose info
@@ -92,7 +92,7 @@ ioServer = io.launchHubServer(window=win, **ioConfig)
 eyetracker = None
 
 filelist = []
-rootdir = 'tasks_CompareObject_mem_12_distr_0_1_0\\tasks_CompareObject_mem_12_distr_0_1_0'
+rootdir = './tasks_CompareObject_mem_12_distr_0_1_0/tasks_CompareObject_mem_12_distr_0_1_0'
 for file in os.listdir(rootdir):
     d = os.path.join(rootdir, file)
     if(os.path.isdir(d)):
@@ -120,7 +120,7 @@ for a in range(10):
         
     trial_total_epochs = content['epochs']
     objects = content['objects']
-    df = pd.read_pickle(r'min_shapenet_easy_angle\min_shapenet_easy_angle\train_min_shapenet_angle_easy_meta.pkl')
+    df = pd.read_pickle(r'./MULTIF_5_stim/MULTFS_5_stim.pkl')
     instr = content['instruction']
     answers = content['answers']
     img_log = {}
@@ -139,7 +139,7 @@ for a in range(10):
         is_instr = False
         
         ref = int(df.loc[(df['category'] == ctg_mod) & (df['obj_mod'] == obj_mod) & (df['ang_mod'] == ang_mod)].sample()['ref'])
-        img_path = os.path.join('min_shapenet_easy_angle\min_shapenet_easy_angle\org_shapenet/train', f'{ref}/image.png')
+        img_path = os.path.join('./MULTIF_5_stim/MULTFS_5_stim.pkl', f'{ref}/image.png')
         im = Image.open(img_path, 'r')
         img_log[img_epoch] = [is_instr, im, location, ctg_mod, obj_mod, ang_mod, is_distractor, curr_answer, a, None]
     for j in range(trial_total_epochs):
