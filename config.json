@@ -1,0 +1,9 @@
+{"stim_path":
+    "/MULTIF_5_stim/MULTFS_5_stim.pkl",
+    "task":
+            "1-back_identity",
+    "img_path":
+            "/MULTIF_5_stim/",
+    "n_trials":
+            10
+}

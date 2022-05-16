@@ -31,7 +31,26 @@ import random
 from PIL import Image
 import json
 
-sys.path
+import argparse
+
+root = os.getcwd()
+print(root)
+def LoadFromFile(namespace):
+    with open(root + "/config.json") as f:
+        data = json.load(f)
+    return data[namespace]
+
+
+parser = argparse.ArgumentParser()
+# other arguments
+parser.add_argument('--stim_path', type = str, required = False, default=LoadFromFile("stim_path"))
+parser.add_argument('--task', type = str, required = False, default = LoadFromFile("task"))
+parser.add_argument('--img_path', type = str, required = False, default = LoadFromFile("img_path"))
+parser.add_argument('--n_trials', type = int, required = False, default = LoadFromFile("n_trials"))
+args = parser.parse_args()
+
+if args.task == "1-back_identity":
+    task_dir = root + "/1back_identity"
 
 #print(pd.__version__)
 # Ensure that relative paths start from the same directory as this script
@@ -68,7 +87,7 @@ frameTolerance = 0.001  # how close to onset before 'same' frame
 
 # Setup the Window
 win = visual.Window(
-    size=(1000, 1000), fullscr=False, screen=0, 
+    size=(500, 500), fullscr=False, screen=0,
     winType='pyglet', allowGUI=False, allowStencil=False,
     monitor='testMonitor', color=[-1,-1,-1], colorSpace='rgb',
     blendMode='avg', useFBO=True, 
@@ -92,7 +111,7 @@ ioServer = io.launchHubServer(window=win, **ioConfig)
 eyetracker = None
 
 filelist = []
-rootdir = './tasks_CompareObject_mem_12_distr_0_1_0/tasks_CompareObject_mem_12_distr_0_1_0'
+rootdir = task_dir
 for file in os.listdir(rootdir):
     d = os.path.join(rootdir, file)
     if(os.path.isdir(d)):
@@ -102,7 +121,7 @@ filelist.remove(filelist[0])
 #print(filelist)
 
 random_index_list = []
-for i in range(10):
+for i in range(args.n_trials):
     rand_gen = random.randint(0, len(filelist)-1)
     while (rand_gen in random_index_list):
         rand_gen = random.randint(0, len(filelist)-1)
@@ -110,7 +129,7 @@ for i in range(10):
 frame_log = {}
 num_total_epochs = 0
 current_frame_num = 0
-for a in range(10):
+for a in range(args.n_trials):
     task_number = str(filelist[a])
     folder_number = task_number
     task_path = os.path.join(f'{task_number}', 'compo_task_example')
@@ -120,7 +139,7 @@ for a in range(10):
         
     trial_total_epochs = content['epochs']
     objects = content['objects']
-    df = pd.read_pickle(r'./MULTIF_5_stim/MULTFS_5_stim.pkl')
+    df = pd.read_pickle(root + args.stim_path)
     instr = content['instruction']
     answers = content['answers']
     img_log = {}
@@ -139,7 +158,7 @@ for a in range(10):
         is_instr = False
         
         ref = int(df.loc[(df['category'] == ctg_mod) & (df['obj_mod'] == obj_mod) & (df['ang_mod'] == ang_mod)].sample()['ref'])
-        img_path = os.path.join('./MULTIF_5_stim/MULTFS_5_stim.pkl', f'{ref}/image.png')
+        img_path = os.path.join(root + args.img_path, f'{ref}/image.png')
         im = Image.open(img_path, 'r')
         img_log[img_epoch] = [is_instr, im, location, ctg_mod, obj_mod, ang_mod, is_distractor, curr_answer, a, None]
     for j in range(trial_total_epochs):
