@@ -47,18 +47,21 @@ parser.add_argument('--stim_path', type = str, required = False, default=LoadFro
 parser.add_argument('--task', type = str, required = False, default = LoadFromFile("task"))
 parser.add_argument('--img_path', type = str, required = False, default = LoadFromFile("img_path"))
 parser.add_argument('--n_trials', type = int, required = False, default = LoadFromFile("n_trials"))
+parser.add_argument('--instruction_duration', type = float, required = False, default = LoadFromFile("instruction_duration"))
+parser.add_argument('--frame_duration', type = float, required = False, default = LoadFromFile("frame_duration"))
+parser.add_argument('--ISI', type = float, required = False, default = LoadFromFile("ISI"))
 args = parser.parse_args()
 
 if args.task == "1-back_identity":
     task_dir = root + "/1back_identity"
 
-#print(pd.__version__)
-# Ensure that relative paths start from the same directory as this script
-_thisDir = os.path.dirname(os.path.abspath(__file__))
-os.chdir(_thisDir)
+ins_duration = args.instruction_duration
+frame_duration = args.frame_duration
+ISI = args.ISI
+
 # Store info about the experiment session
 psychopyVersion = '2022.1.2'
-expName = 'interpreter'  # from the Builder filename that created this script
+expName = args.task  # from the Builder filename that created this script
 expInfo = {'participant': '', 'session': '001'}
 dlg = gui.DlgFromDict(dictionary=expInfo, sortKeys=False, title=expName)
 if dlg.OK == False:
@@ -68,7 +71,7 @@ expInfo['expName'] = expName
 expInfo['psychopyVersion'] = psychopyVersion
 
 # Data file name stem = absolute path + name; later add .psyexp, .csv, .log, etc
-filename = _thisDir + os.sep + u'data/%s_%s_%s' % (expInfo['participant'], expName, expInfo['date'])
+filename = './' + os.sep + u'data/%s_%s_%s' % (expInfo['participant'], expName, expInfo['date'])
 
 # An ExperimentHandler isn't essential but helps with data saving
 thisExp = data.ExperimentHandler(name=expName, version='',
@@ -93,20 +96,20 @@ win = visual.Window(
     blendMode='avg', useFBO=True, 
     units='height')
 # store frame rate of monitor if we can measure it
-expInfo['frameRate'] = win.getActualFrameRate()
-if expInfo['frameRate'] != None:
-    frameDur = 1.0 / round(expInfo['frameRate'])
-else:
-    frameDur = 1.0 / 60.0  # could not measure, so guess
+# expInfo['frameRate'] = win.getActualFrameRate()
+# if expInfo['frameRate'] != None:
+#     frameDur = 1.0 / round(expInfo['frameRate'])
+# else:
+#     frameDur = 1.0 / 60.0  # could not measure, so guess
 # Setup ioHub
 ioConfig = {}
 
 # Setup iohub keyboard
 ioConfig['Keyboard'] = dict(use_keymap='psychopy')
 
-ioSession = '1'
-if 'session' in expInfo:
-    ioSession = str(expInfo['session'])
+# ioSession = '1'
+# if 'session' in expInfo:
+#     ioSession = str(expInfo['session'])
 ioServer = io.launchHubServer(window=win, **ioConfig)
 eyetracker = None
 
@@ -278,7 +281,7 @@ for thisEpoch in epochs:
         # update/draw components on each frame
         
         # *stimulus* updates
-        if stimulus.status == NOT_STARTED and tThisFlip >= 0.0-frameTolerance:
+        if stimulus.status == NOT_STARTED and tThisFlip >= ISI-frameTolerance:
             # keep track of start time/frame for later
             stimulus.frameNStart = frameN  # exact frame index
             stimulus.tStart = t  # local t and not account for scr refresh
@@ -287,7 +290,7 @@ for thisEpoch in epochs:
             stimulus.setAutoDraw(True)
         if stimulus.status == STARTED:
             # is it time to stop? (based on global clock, using actual start)
-            if tThisFlipGlobal > stimulus.tStartRefresh + 0.5-frameTolerance:
+            if tThisFlipGlobal > stimulus.tStartRefresh + frame_duration-frameTolerance:
                 # keep track of stop time/frame for later
                 stimulus.tStop = t  # not accounting for scr refresh
                 stimulus.frameNStop = frameN  # exact frame index
@@ -305,14 +308,14 @@ for thisEpoch in epochs:
         if instructions.status == STARTED:
             # is it time to stop? (based on global clock, using actual start)
             if(current_frame[0] == True):
-                if tThisFlipGlobal > instructions.tStartRefresh + 10000-frameTolerance:
+                if tThisFlipGlobal > instructions.tStartRefresh + ins_duration-frameTolerance:
                 # keep track of stop time/frame for later
                     instructions.tStop = t  # not accounting for scr refresh
                     instructions.frameNStop = frameN  # exact frame index
                     win.timeOnFlip(instructions, 'tStopRefresh')  # time at next scr refresh
                     instructions.setAutoDraw(False)
             else:
-                if tThisFlipGlobal > instructions.tStartRefresh + 0.5-frameTolerance:
+                if tThisFlipGlobal > instructions.tStartRefresh + frame_duration-frameTolerance:
                     # keep track of stop time/frame for later
                     instructions.tStop = t  # not accounting for scr refresh
                     instructions.frameNStop = frameN  # exact frame index
@@ -320,7 +323,7 @@ for thisEpoch in epochs:
                     instructions.setAutoDraw(False)
         
         # *fixation_point* updates
-        if fixation_point.status == NOT_STARTED and tThisFlip >= 0.0-frameTolerance:
+        if fixation_point.status == NOT_STARTED and tThisFlip >= ISI-frameTolerance:
             # keep track of start time/frame for later
             fixation_point.frameNStart = frameN  # exact frame index
             fixation_point.tStart = t  # local t and not account for scr refresh
@@ -329,7 +332,7 @@ for thisEpoch in epochs:
             fixation_point.setAutoDraw(True)
         if fixation_point.status == STARTED:
             # is it time to stop? (based on global clock, using actual start)
-            if tThisFlipGlobal > fixation_point.tStartRefresh + 0.5-frameTolerance:
+            if tThisFlipGlobal > fixation_point.tStartRefresh + frame_duration-frameTolerance:
                 # keep track of stop time/frame for later
                 fixation_point.tStop = t  # not accounting for scr refresh
                 fixation_point.frameNStop = frameN  # exact frame index
@@ -338,7 +341,7 @@ for thisEpoch in epochs:
         if(current_frame[0] == True):
         # *key_resp* updates
             waitOnFlip = False
-            if key_resp.status == NOT_STARTED and tThisFlip >= 0.0-frameTolerance:
+            if key_resp.status == NOT_STARTED and tThisFlip >= 0-frameTolerance:
                 # keep track of start time/frame for later
                 key_resp.frameNStart = frameN  # exact frame index
                 key_resp.tStart = t  # local t and not account for scr refresh
@@ -351,7 +354,7 @@ for thisEpoch in epochs:
                 win.callOnFlip(key_resp.clearEvents, eventType='keyboard')  # clear events on next screen flip
             if key_resp.status == STARTED:
             # is it time to stop? (based on global clock, using actual start)
-                if tThisFlipGlobal > key_resp.tStartRefresh + 10000-frameTolerance:
+                if tThisFlipGlobal > key_resp.tStartRefresh + ins_duration-frameTolerance:
                     # keep track of stop time/frame for later
                     key_resp.tStop = t  # not accounting for scr refresh
                     key_resp.frameNStop = frameN  # exact frame index
@@ -368,7 +371,7 @@ for thisEpoch in epochs:
         if(current_frame[0] != True):
             # *key_resp* updates
             waitOnFlip = False
-            if key_resp.status == NOT_STARTED and tThisFlip >= 0.0-frameTolerance:
+            if key_resp.status == NOT_STARTED and tThisFlip >= ISI-frameTolerance:
                 # keep track of start time/frame for later
                 key_resp.frameNStart = frameN  # exact frame index
                 key_resp.tStart = t  # local t and not account for scr refresh
@@ -381,7 +384,7 @@ for thisEpoch in epochs:
                 win.callOnFlip(key_resp.clearEvents, eventType='keyboard')  # clear events on next screen flip
             if key_resp.status == STARTED:
                 # is it time to stop? (based on global clock, using actual start)
-                if tThisFlipGlobal > key_resp.tStartRefresh + 0.5-frameTolerance:
+                if tThisFlipGlobal > key_resp.tStartRefresh + frame_duration-frameTolerance:
                     # keep track of stop time/frame for later
                     key_resp.tStop = t  # not accounting for scr refresh
                     key_resp.frameNStop = frameN  # exact frame index
@@ -442,4 +445,5 @@ if eyetracker:
     eyetracker.setConnectionState(False)
 thisExp.abort()  # or data files will save again on exit
 win.close()
+ioServer.quit()
 core.quit()

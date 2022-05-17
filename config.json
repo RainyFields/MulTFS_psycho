@@ -5,5 +5,11 @@
     "img_path":
             "/MULTIF_5_stim/",
     "n_trials":
-            10
+            10,
+    "instruction_duration":
+            10000,
+    "frame_duration":
+            1,
+    "ISI":
+            1,
 }
