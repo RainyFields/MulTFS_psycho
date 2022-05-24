@@ -394,8 +394,8 @@ for thisEpoch in epochs:
                 theseKeys = key_resp.getKeys(keyList=['space'], waitRelease=False)
                 _key_resp_allKeys.extend(theseKeys)
                 if len(_key_resp_allKeys):
-                    key_resp.keys = _key_resp_allKeys[-1].name  # just the last key pressed
-                    key_resp.rt = _key_resp_allKeys[-1].rt
+                    key_resp.keys = [key.name for key in _key_resp_allKeys]  # storing all keys
+                    key_resp.rt = [key.rt for key in _key_resp_allKeys]
                     # a response ends the routine
                     continueRoutine = False
 
