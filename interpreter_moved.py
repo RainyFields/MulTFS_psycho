@@ -91,16 +91,16 @@ frameTolerance = 0.001  # how close to onset before 'same' frame
 # Setup the Window
 win = visual.Window(
     size=(500, 500), fullscr=False, screen=0,
-    winType='pyglet', allowGUI=False, allowStencil=False,
+    winType='pyglet', allowGUI=True, allowStencil=False,
     monitor='testMonitor', color=[-1,-1,-1], colorSpace='rgb',
     blendMode='avg', useFBO=True, 
     units='height')
 # store frame rate of monitor if we can measure it
-# expInfo['frameRate'] = win.getActualFrameRate()
-# if expInfo['frameRate'] != None:
-#     frameDur = 1.0 / round(expInfo['frameRate'])
-# else:
-#     frameDur = 1.0 / 60.0  # could not measure, so guess
+#expInfo['frameRate'] = win.getActualFrameRate()
+#if expInfo['frameRate'] != None:
+#    frameDur = 1.0 / round(expInfo['frameRate'])
+#else:
+#    frameDur = float("NaN")  # could not measure, so guess
 # Setup ioHub
 ioConfig = {}
 
