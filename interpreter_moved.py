@@ -5,8 +5,8 @@ This experiment was created using PsychoPy3 Experiment Builder (v2022.1.2),
     on May 05, 2022, at 12:16
 If you publish work using this script the most relevant publication is:
 
-    Peirce J, Gray JR, Simpson S, MacAskill M, Höchenberger R, Sogo H, Kastman E, Lindeløv JK. (2019) 
-        PsychoPy2: Experiments in behavior made easy Behav Res 51: 195. 
+    Peirce J, Gray JR, Simpson S, MacAskill M, Höchenberger R, Sogo H, Kastman E, Lindeløv JK. (2019)
+        PsychoPy2: Experiments in behavior made easy Behav Res 51: 195.
         https://doi.org/10.3758/s13428-018-01193-y
 
 """
@@ -35,15 +35,24 @@ import argparse
 
 root = os.getcwd()
 print(root)
-def LoadFromFile(namespace):
-    with open(root + "/config.json") as f:
+
+curr_sys = os.name
+
+
+def LoadFromFile(namespace,):
+    myfile = "config.json"
+    with open(os.path.join(root, myfile)) as f:
         data = json.load(f)
     return data[namespace]
 
 
+
 parser = argparse.ArgumentParser()
 # other arguments
-parser.add_argument('--stim_path', type = str, required = False, default=LoadFromFile("stim_path"))
+# if curr_sys == "posix":
+#     parser.add_argument('--stim_path', type = str, required = False, default=LoadFromFile("stim_path_mac"))
+# else:
+#     parser.add_argument('--stim_path', type=str, required=False, default=LoadFromFile("stim_path_win"))
 parser.add_argument('--task', type = str, required = False, default = LoadFromFile("task"))
 parser.add_argument('--img_path', type = str, required = False, default = LoadFromFile("img_path"))
 parser.add_argument('--n_trials', type = int, required = False, default = LoadFromFile("n_trials"))
@@ -53,7 +62,7 @@ parser.add_argument('--ISI', type = float, required = False, default = LoadFromF
 args = parser.parse_args()
 
 if args.task == "1-back_identity":
-    task_dir = root + "/1back_identity"
+    task_dir = os.path.join(root, "1back_identity")
 
 ins_duration = args.instruction_duration
 frame_duration = args.frame_duration
@@ -71,14 +80,24 @@ expInfo['expName'] = expName
 expInfo['psychopyVersion'] = psychopyVersion
 
 # Data file name stem = absolute path + name; later add .psyexp, .csv, .log, etc
-filename = './' + os.sep + u'data/%s_%s_%s' % (expInfo['participant'], expName, expInfo['date'])
+if curr_sys == "posix":
+    filename = './' + os.sep + u'data/%s_%s_%s' % (expInfo['participant'], expName, expInfo['date'])
+else:
+    filename = os.path.dirname(os.path.abspath(__file__)) + os.sep + u'data/%s_%s_%s' % (expInfo['participant'], expName, expInfo['date'])
 
 # An ExperimentHandler isn't essential but helps with data saving
-thisExp = data.ExperimentHandler(name=expName, version='',
-    extraInfo=expInfo, runtimeInfo=None,
-    originPath='./interpreter_moved.py',
-    savePickle=True, saveWideText=True,
-    dataFileName=filename)
+if curr_sys == "posix":
+    thisExp = data.ExperimentHandler(name=expName, version='',
+        extraInfo=expInfo, runtimeInfo=None,
+        originPath='./interpreter_moved.py',
+        savePickle=True, saveWideText=True,
+        dataFileName=filename)
+else:
+    thisExp = data.ExperimentHandler(name=expName, version='',
+                                     extraInfo=expInfo, runtimeInfo=None,
+                                     originPath=os.path.realpath(),
+                                     savePickle=True, saveWideText=True,
+                                     dataFileName=filename)
 # save a log file for detail verbose info
 logFile = logging.LogFile(filename+'.log', level=logging.EXP)
 logging.console.setLevel(logging.WARNING)  # this outputs to the screen, not a file
@@ -93,7 +112,7 @@ win = visual.Window(
     size=(500, 500), fullscr=False, screen=0,
     winType='pyglet', allowGUI=True, allowStencil=False,
     monitor='testMonitor', color=[-1,-1,-1], colorSpace='rgb',
-    blendMode='avg', useFBO=True, 
+    blendMode='avg', useFBO=True,
     units='height')
 # store frame rate of monitor if we can measure it
 #expInfo['frameRate'] = win.getActualFrameRate()
@@ -118,7 +137,7 @@ rootdir = task_dir
 for file in os.listdir(rootdir):
     d = os.path.join(rootdir, file)
     if(os.path.isdir(d)):
-        filelist.append(d) 
+        filelist.append(d)
 filelist.pop()
 filelist.remove(filelist[0])
 #print(filelist)
@@ -139,14 +158,14 @@ for a in range(args.n_trials):
 
     with open(task_path, "r") as fobj:
         content = json.load(fobj)
-        
+
     trial_total_epochs = content['epochs']
     objects = content['objects']
-    df = pd.read_pickle(root + args.stim_path)
+    df = pd.read_pickle(os.path.join(root, "MULTIF_5_stim","MULTFS_5_stim.pkl", ))
     instr = content['instruction']
     answers = content['answers']
     img_log = {}
-    #img_log[-1] = [True, None, None, None, None, None, None, instr] 
+    #img_log[-1] = [True, None, None, None, None, None, None, instr]
     frame_log[current_frame_num] = [True, None, None, None, None, None, None, None, a, instr]
     current_frame_num += 1
     for i in range(len(objects)):
@@ -159,9 +178,10 @@ for a in range(args.n_trials):
         is_distractor = obj['is_distractor']
         curr_answer = answers[i]
         is_instr = False
-        
+
         ref = int(df.loc[(df['category'] == ctg_mod) & (df['obj_mod'] == obj_mod) & (df['ang_mod'] == ang_mod)].sample()['ref'])
-        img_path = os.path.join(root + args.img_path, f'{ref}/image.png')
+
+        img_path = os.path.join(root + args.img_path, f'{ref}','image.png')
         im = Image.open(img_path, 'r')
         img_log[img_epoch] = [is_instr, im, location, ctg_mod, obj_mod, ang_mod, is_distractor, curr_answer, a, None]
     for j in range(trial_total_epochs):
@@ -181,7 +201,7 @@ defaultKeyboard = keyboard.Keyboard(backend='iohub')
 trialClock = core.Clock()
 stimulus = visual.ImageStim(
     win=win,
-    name='stimulus', 
+    name='stimulus',
     image=None, mask=None, anchor='center',
     ori=0.0, pos=[0,0], size=(0.2, 0.2),
     color=[1,1,1], colorSpace='rgb', opacity=None,
@@ -190,8 +210,8 @@ stimulus = visual.ImageStim(
 instructions = visual.TextStim(win=win, name='instructions',
     text=None,
     font='Open Sans',
-    pos=(0, 0), height=0.02, wrapWidth=0.4, ori=0.0, 
-    color='white', colorSpace='rgb', opacity=None, 
+    pos=(0, 0), height=0.02, wrapWidth=0.4, ori=0.0,
+    color='white', colorSpace='rgb', opacity=None,
     languageStyle='LTR',
     depth=-1.0);
 fixation_point = visual.ShapeStim(
@@ -205,10 +225,10 @@ key_resp = keyboard.Keyboard()
 
 # Create some handy timers
 globalClock = core.Clock()  # to track the time since experiment started
-routineTimer = core.CountdownTimer()  # to track time remaining of each (non-slip) routine 
+routineTimer = core.CountdownTimer()  # to track time remaining of each (non-slip) routine
 
 # set up handler to look after randomisation of conditions etc
-epochs = data.TrialHandler(nReps=num_total_epochs + 1, method='sequential', 
+epochs = data.TrialHandler(nReps=num_total_epochs + 1, method='sequential',
     extraInfo=expInfo, originPath=-1,
     trialList=[None],
     seed=None, name='epochs')
@@ -225,7 +245,7 @@ for thisEpoch in epochs:
     if thisEpoch != None:
         for paramName in thisEpoch:
             exec('{} = thisEpoch[paramName]'.format(paramName))
-    
+
     # ------Prepare to start Routine "trial"-------
     continueRoutine = True
     routineTimer.add(100000.000000)
@@ -254,7 +274,7 @@ for thisEpoch in epochs:
         key_resp.keys = []
         key_resp.rt = []
         _key_resp_allKeys = []
-    
+
     frame_num += 1
     # keep track of which components have finished
     trialComponents = [stimulus, instructions, fixation_point, key_resp]
@@ -270,7 +290,7 @@ for thisEpoch in epochs:
     _timeToFirstFrame = win.getFutureFlipTime(clock="now")
     trialClock.reset(-_timeToFirstFrame)  # t0 is time of first possible flip
     frameN = -1
-    
+
     # -------Run Routine "trial"-------
     while continueRoutine and routineTimer.getTime() > 0:
         # get current time
@@ -279,7 +299,7 @@ for thisEpoch in epochs:
         tThisFlipGlobal = win.getFutureFlipTime(clock=None)
         frameN = frameN + 1  # number of completed frames (so 0 is the first frame)
         # update/draw components on each frame
-        
+
         # *stimulus* updates
         if stimulus.status == NOT_STARTED and tThisFlip >= ISI-frameTolerance:
             # keep track of start time/frame for later
@@ -296,7 +316,7 @@ for thisEpoch in epochs:
                 stimulus.frameNStop = frameN  # exact frame index
                 win.timeOnFlip(stimulus, 'tStopRefresh')  # time at next scr refresh
                 stimulus.setAutoDraw(False)
-        
+
         # *instructions* updates
         if instructions.status == NOT_STARTED and tThisFlip >= 0.0-frameTolerance:
             # keep track of start time/frame for later
@@ -321,7 +341,7 @@ for thisEpoch in epochs:
                     instructions.frameNStop = frameN  # exact frame index
                     win.timeOnFlip(instructions, 'tStopRefresh')  # time at next scr refresh
                     instructions.setAutoDraw(False)
-        
+
         # *fixation_point* updates
         if fixation_point.status == NOT_STARTED and tThisFlip >= ISI-frameTolerance:
             # keep track of start time/frame for later
@@ -402,7 +422,7 @@ for thisEpoch in epochs:
         # check for quit (typically the Esc key)
         if endExpNow or defaultKeyboard.getKeys(keyList=["escape"]):
             core.quit()
-        
+
         # check if all components have finished
         if not continueRoutine:  # a component has requested a forced-end of Routine
             break
@@ -411,11 +431,11 @@ for thisEpoch in epochs:
             if hasattr(thisComponent, "status") and thisComponent.status != FINISHED:
                 continueRoutine = True
                 break  # at least one component has not yet finished
-        
+
         # refresh the screen
         if continueRoutine:  # don't flip if this routine is over or we'll get a blank screen
             win.flip()
-    
+
     # -------Ending Routine "trial"-------
     for thisComponent in trialComponents:
         if hasattr(thisComponent, "setAutoDraw"):
@@ -428,11 +448,11 @@ for thisEpoch in epochs:
     epochs.addData('fixation_point.stopped', fixation_point.tStopRefresh)
     thisExp.nextEntry()
 
-    
+
 # completed epochs repeats of 'epochs'
 
 
-# Flip one final time so any remaining win.callOnFlip() 
+# Flip one final time so any remaining win.callOnFlip()
 # and win.timeOnFlip() tasks get executed before quitting
 win.flip()
 
