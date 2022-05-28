@@ -14,6 +14,7 @@ If you publish work using this script the most relevant publication is:
 from psychopy import locale_setup
 from psychopy import prefs
 from psychopy import sound, gui, visual, core, data, event, logging, clock, colors, layout
+import csv
 from psychopy.constants import (NOT_STARTED, STARTED, PLAYING, PAUSED,
                                 STOPPED, FINISHED, PRESSED, RELEASED, FOREVER)
 
@@ -34,7 +35,6 @@ import json
 import argparse
 
 root = os.getcwd()
-print(root)
 
 curr_sys = os.name
 
@@ -82,8 +82,10 @@ expInfo['psychopyVersion'] = psychopyVersion
 # Data file name stem = absolute path + name; later add .psyexp, .csv, .log, etc
 if curr_sys == "posix":
     filename = './' + os.sep + u'data/%s_%s_%s' % (expInfo['participant'], expName, expInfo['date'])
+    shortened_filename = './' + os.sep + "key_presses"
 else:
     filename = os.path.dirname(os.path.abspath(__file__)) + os.sep + u'data/%s_%s_%s' % (expInfo['participant'], expName, expInfo['date'])
+    shortened_filename = os.path.dirname(os.path.abspath(__file__)) + os.sep + "key_presses"
 
 # An ExperimentHandler isn't essential but helps with data saving
 if curr_sys == "posix":
@@ -95,7 +97,7 @@ if curr_sys == "posix":
 else:
     thisExp = data.ExperimentHandler(name=expName, version='',
                                      extraInfo=expInfo, runtimeInfo=None,
-                                     originPath=os.path.realpath(),
+                                     originPath=os.path.abspath(__file__),
                                      savePickle=True, saveWideText=True,
                                      dataFileName=filename)
 # save a log file for detail verbose info
@@ -126,9 +128,9 @@ ioConfig = {}
 # Setup iohub keyboard
 ioConfig['Keyboard'] = dict(use_keymap='psychopy')
 
-# ioSession = '1'
-# if 'session' in expInfo:
-#     ioSession = str(expInfo['session'])
+ioSession = '1'
+if 'session' in expInfo:
+    ioSession = str(expInfo['session'])
 ioServer = io.launchHubServer(window=win, **ioConfig)
 eyetracker = None
 
@@ -140,7 +142,7 @@ for file in os.listdir(rootdir):
         filelist.append(d)
 filelist.pop()
 filelist.remove(filelist[0])
-#print(filelist)
+
 
 random_index_list = []
 for i in range(args.n_trials):
@@ -148,11 +150,14 @@ for i in range(args.n_trials):
     while (rand_gen in random_index_list):
         rand_gen = random.randint(0, len(filelist)-1)
     random_index_list.append(rand_gen)
+random_trials = []
+for j in range(len(random_index_list)):
+     random_trials.append(filelist[random_index_list[j]])
 frame_log = {}
 num_total_epochs = 0
 current_frame_num = 0
 for a in range(args.n_trials):
-    task_number = str(filelist[a])
+    task_number = str(random_trials[a])
     folder_number = task_number
     task_path = os.path.join(f'{task_number}', 'compo_task_example')
 
@@ -165,7 +170,6 @@ for a in range(args.n_trials):
     instr = content['instruction']
     answers = content['answers']
     img_log = {}
-    #img_log[-1] = [True, None, None, None, None, None, None, instr]
     frame_log[current_frame_num] = [True, None, None, None, None, None, None, None, a, instr]
     current_frame_num += 1
     for i in range(len(objects)):
@@ -239,6 +243,9 @@ if thisEpoch != None:
     for paramName in thisEpoch:
         exec('{} = thisEpoch[paramName]'.format(paramName))
 frame_num = 0
+key_responses_list = [['Frame Num', 'Key', 'Time']]
+key_logger = csv.writer(open(shortened_filename + '.csv', 'w'), lineterminator = '\n')
+key_logger.writerow(["Frame Num", "Key", "Response Time", "Global Time", "Correct Answer?"])
 for thisEpoch in epochs:
     currentLoop = epochs
     # abbreviate parameter names if possible (e.g. rgb = thisEpoch.rgb)
@@ -258,7 +265,6 @@ for thisEpoch in epochs:
             stimulus.setImage(None)
         else:
             stimulus.setPos(current_frame[2])
-            #stimulus.setPos((0, -0.5))
             stimulus.setImage(current_frame[1])
         if(current_frame[7] != "null"):
             fixation_point.setSize((0, 0))
@@ -274,6 +280,10 @@ for thisEpoch in epochs:
         key_resp.keys = []
         key_resp.rt = []
         _key_resp_allKeys = []
+
+ 
+
+
 
     frame_num += 1
     # keep track of which components have finished
@@ -371,7 +381,7 @@ for thisEpoch in epochs:
                 # keyboard checking is just starting
                 waitOnFlip = True
                 win.callOnFlip(key_resp.clock.reset)  # t=0 on next screen flip
-                win.callOnFlip(key_resp.clearEvents, eventType='keyboard')  # clear events on next screen flip
+                #win.callOnFlip(key_resp.clearEvents, eventType='keyboard')  # clear events on next screen flip
             if key_resp.status == STARTED:
             # is it time to stop? (based on global clock, using actual start)
                 if tThisFlipGlobal > key_resp.tStartRefresh + ins_duration-frameTolerance:
@@ -381,11 +391,23 @@ for thisEpoch in epochs:
                     win.timeOnFlip(key_resp, 'tStopRefresh')  # time at next scr refresh
                     key_resp.status = FINISHED
             if key_resp.status == STARTED and not waitOnFlip:
-                theseKeys = key_resp.getKeys(keyList=['space'], waitRelease=False)
+                theseKeys = key_resp.getKeys(keyList=['space', 't', 'f'], waitRelease=False)
                 _key_resp_allKeys.extend(theseKeys)
                 if len(_key_resp_allKeys):
-                    key_resp.keys = _key_resp_allKeys[-1].name  # just the last key pressed
-                    key_resp.rt = _key_resp_allKeys[-1].rt
+                    key_resp.keys = [key.name for key in _key_resp_allKeys]  # storing all keys
+                    key_resp.rt = [key.rt for key in _key_resp_allKeys]
+                    correct = False
+                    if(key_resp.keys[0] == 't'):
+                        if(current_frame[7] == 'true'):
+                            correct = True
+                    if(key_resp.keys[0] == 'f'):
+                        if(current_frame[7] == 'false'):
+                            correct = True
+                    key_resp.rt = [key.rt for key in _key_resp_allKeys]
+                    if(current_frame[7] == None):
+                        key_logger.writerow([frame_num, key_resp.keys, key_resp.rt, (100000 * frame_num - routineTimer.getTime()), "N/A"])
+                    else:
+                        key_logger.writerow([frame_num, key_resp.keys, key_resp.rt, (100000 * frame_num - routineTimer.getTime()), str(correct)])
                     # a response ends the routine
                     continueRoutine = False
         if(current_frame[0] != True):
@@ -411,13 +433,26 @@ for thisEpoch in epochs:
                     win.timeOnFlip(key_resp, 'tStopRefresh')  # time at next scr refresh
                     key_resp.status = FINISHED
             if key_resp.status == STARTED and not waitOnFlip:
-                theseKeys = key_resp.getKeys(keyList=['space'], waitRelease=False)
+                theseKeys = key_resp.getKeys(keyList=['space', 't', 'f'], waitRelease=False)
                 _key_resp_allKeys.extend(theseKeys)
                 if len(_key_resp_allKeys):
                     key_resp.keys = [key.name for key in _key_resp_allKeys]  # storing all keys
+                    correct = False
+                    if(key_resp.keys[0] == 't'):
+                        if(current_frame[7] == 'true'):
+                            correct = True
+                    if(key_resp.keys[0] == 'f'):
+                        if(current_frame[7] == 'false'):
+                            correct = True
                     key_resp.rt = [key.rt for key in _key_resp_allKeys]
+                    if(current_frame[7] == None):
+                        key_logger.writerow([frame_num, key_resp.keys, key_resp.rt, (100000 * frame_num - routineTimer.getTime()), "N/A"])
+                    else:
+                        key_logger.writerow([frame_num, key_resp.keys, key_resp.rt, (100000 * frame_num - routineTimer.getTime()), str(correct)])
+                    
                     # a response ends the routine
                     continueRoutine = False
+        
 
         # check for quit (typically the Esc key)
         if endExpNow or defaultKeyboard.getKeys(keyList=["escape"]):
@@ -435,6 +470,7 @@ for thisEpoch in epochs:
         # refresh the screen
         if continueRoutine:  # don't flip if this routine is over or we'll get a blank screen
             win.flip()
+        
 
     # -------Ending Routine "trial"-------
     for thisComponent in trialComponents:
@@ -446,7 +482,9 @@ for thisEpoch in epochs:
     epochs.addData('instructions.stopped', instructions.tStopRefresh)
     epochs.addData('fixation_point.started', fixation_point.tStartRefresh)
     epochs.addData('fixation_point.stopped', fixation_point.tStopRefresh)
+    
     thisExp.nextEntry()
+
 
 
 # completed epochs repeats of 'epochs'
@@ -457,6 +495,9 @@ for thisEpoch in epochs:
 win.flip()
 
 # these shouldn't be strictly necessary (should auto-save)
+
+#for i in range(0, len(key_responses_list)):
+    #key_logger.writerow(key_responses_list[i])
 thisExp.saveAsWideText(filename+'.csv', delim='auto')
 thisExp.saveAsPickle(filename)
 logging.flush()
@@ -467,3 +508,4 @@ thisExp.abort()  # or data files will save again on exit
 win.close()
 ioServer.quit()
 core.quit()
+
