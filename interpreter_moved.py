@@ -37,22 +37,13 @@ import argparse
 root = os.getcwd()
 
 curr_sys = os.name
-
-
 def LoadFromFile(namespace,):
     myfile = "config.json"
     with open(os.path.join(root, myfile)) as f:
         data = json.load(f)
     return data[namespace]
-
-
-
 parser = argparse.ArgumentParser()
 # other arguments
-# if curr_sys == "posix":
-#     parser.add_argument('--stim_path', type = str, required = False, default=LoadFromFile("stim_path_mac"))
-# else:
-#     parser.add_argument('--stim_path', type=str, required=False, default=LoadFromFile("stim_path_win"))
 parser.add_argument('--task', type = str, required = False, default = LoadFromFile("task"))
 parser.add_argument('--img_path', type = str, required = False, default = LoadFromFile("img_path"))
 parser.add_argument('--n_trials', type = int, required = False, default = LoadFromFile("n_trials"))
@@ -116,12 +107,7 @@ win = visual.Window(
     monitor='testMonitor', color=[-1,-1,-1], colorSpace='rgb',
     blendMode='avg', useFBO=True,
     units='height')
-# store frame rate of monitor if we can measure it
-#expInfo['frameRate'] = win.getActualFrameRate()
-#if expInfo['frameRate'] != None:
-#    frameDur = 1.0 / round(expInfo['frameRate'])
-#else:
-#    frameDur = float("NaN")  # could not measure, so guess
+
 # Setup ioHub
 ioConfig = {}
 
@@ -196,8 +182,6 @@ for a in range(args.n_trials):
         current_frame_num += 1
     num_total_epochs = num_total_epochs + trial_total_epochs + 1
 
-
-
 # create a default keyboard (e.g. to check for escape)
 defaultKeyboard = keyboard.Keyboard(backend='iohub')
 
@@ -226,7 +210,6 @@ fixation_point = visual.ShapeStim(
     opacity=None, depth=-2.0, interpolate=True)
 key_resp = keyboard.Keyboard()
 
-
 # Create some handy timers
 globalClock = core.Clock()  # to track the time since experiment started
 routineTimer = core.CountdownTimer()  # to track time remaining of each (non-slip) routine
@@ -252,7 +235,6 @@ for thisEpoch in epochs:
     if thisEpoch != None:
         for paramName in thisEpoch:
             exec('{} = thisEpoch[paramName]'.format(paramName))
-
     # ------Prepare to start Routine "trial"-------
     continueRoutine = True
     routineTimer.add(100000.000000)
@@ -280,11 +262,6 @@ for thisEpoch in epochs:
         key_resp.keys = []
         key_resp.rt = []
         _key_resp_allKeys = []
-
- 
-
-
-
     frame_num += 1
     # keep track of which components have finished
     trialComponents = [stimulus, instructions, fixation_point, key_resp]
@@ -326,7 +303,6 @@ for thisEpoch in epochs:
                 stimulus.frameNStop = frameN  # exact frame index
                 win.timeOnFlip(stimulus, 'tStopRefresh')  # time at next scr refresh
                 stimulus.setAutoDraw(False)
-
         # *instructions* updates
         if instructions.status == NOT_STARTED and tThisFlip >= 0.0-frameTolerance:
             # keep track of start time/frame for later
@@ -351,7 +327,6 @@ for thisEpoch in epochs:
                     instructions.frameNStop = frameN  # exact frame index
                     win.timeOnFlip(instructions, 'tStopRefresh')  # time at next scr refresh
                     instructions.setAutoDraw(False)
-
         # *fixation_point* updates
         if fixation_point.status == NOT_STARTED and tThisFlip >= ISI-frameTolerance:
             # keep track of start time/frame for later
@@ -397,12 +372,10 @@ for thisEpoch in epochs:
                     key_resp.keys = [key.name for key in _key_resp_allKeys]  # storing all keys
                     key_resp.rt = [key.rt for key in _key_resp_allKeys]
                     correct = False
-                    if(key_resp.keys[0] == 't'):
-                        if(current_frame[7] == 'true'):
-                            correct = True
-                    if(key_resp.keys[0] == 'f'):
-                        if(current_frame[7] == 'false'):
-                            correct = True
+                    if(key_resp.keys[0] == 't' and current_frame[7] == 'true'):
+                        correct = True
+                    if(key_resp.keys[0] == 'f' and current_frame[7] == 'false'):
+                        correct = True
                     key_resp.rt = [key.rt for key in _key_resp_allKeys]
                     if(current_frame[7] == None):
                         key_logger.writerow([frame_num, key_resp.keys, key_resp.rt, (100000 * frame_num - routineTimer.getTime()), "N/A"])
@@ -452,8 +425,6 @@ for thisEpoch in epochs:
                     
                     # a response ends the routine
                     continueRoutine = False
-        
-
         # check for quit (typically the Esc key)
         if endExpNow or defaultKeyboard.getKeys(keyList=["escape"]):
             core.quit()
@@ -470,8 +441,6 @@ for thisEpoch in epochs:
         # refresh the screen
         if continueRoutine:  # don't flip if this routine is over or we'll get a blank screen
             win.flip()
-        
-
     # -------Ending Routine "trial"-------
     for thisComponent in trialComponents:
         if hasattr(thisComponent, "setAutoDraw"):
@@ -484,20 +453,12 @@ for thisEpoch in epochs:
     epochs.addData('fixation_point.stopped', fixation_point.tStopRefresh)
     
     thisExp.nextEntry()
-
-
-
 # completed epochs repeats of 'epochs'
-
 
 # Flip one final time so any remaining win.callOnFlip()
 # and win.timeOnFlip() tasks get executed before quitting
 win.flip()
-
 # these shouldn't be strictly necessary (should auto-save)
-
-#for i in range(0, len(key_responses_list)):
-    #key_logger.writerow(key_responses_list[i])
 thisExp.saveAsWideText(filename+'.csv', delim='auto')
 thisExp.saveAsPickle(filename)
 logging.flush()
